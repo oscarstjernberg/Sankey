@@ -22,7 +22,6 @@ def get_data(ticker):
 @app.route('/fetch_net_income_percentage_data/<ticker>')
 def get_net_income_percentage_data(ticker):
     try:
-        #ticker = request.args.get('ticker')
         net_income_percentage_data = fetch_net_income_percentage_data(ticker)
         return jsonify(net_income_percentage_data)
     except Exception as e:
@@ -32,9 +31,17 @@ def get_net_income_percentage_data(ticker):
 @app.route('/fetch_total_revenue_data/<ticker>')
 def get_total_revenue_data(ticker):
     try:
-        #ticker = request.args.get('ticker')
         total_revenue_data = fetch_total_revenue_data(ticker)
         return jsonify(total_revenue_data)
+    except Exception as e:
+        print(f"Unexpected error occurred: {e}")
+        return jsonify({"error": f"Unexpected error occurred: {e}"}), 500
+    
+@app.route('/fetch_financial_report/<ticker>')
+def get_financial_report(ticker):
+    try:
+        report_data = fetch_financial_report(ticker)
+        return jsonify(report_data)
     except Exception as e:
         print(f"Unexpected error occurred: {e}")
         return jsonify({"error": f"Unexpected error occurred: {e}"}), 500

@@ -53,6 +53,23 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        #financial-report {
+            width: 80%;
+            margin-top: 20px;
+            text-align: left;
+        }
+        #financial-report table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #financial-report th, #financial-report td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        #financial-report th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -65,6 +82,10 @@
     <div class="chart-container">
         <div id="bar-chart1" class="chart"></div>
         <div id="bar-chart2" class="chart"></div>
+    </div>
+    <div id="financial-report">
+        <h2>Financial Report</h2>
+        <div id="report-table"></div>
     </div>
         <script>
         let sp500Tickers = [];
@@ -98,6 +119,7 @@
             if (sp500Tickers.includes(ticker)) {
                 fetchSankeyData(ticker);
                 fetchBarChartPercent(ticker);
+                fetchBarChartRevenue(ticker);
             } else {
                 alert('Ticker not found in S&P 500 index.');
             }
@@ -145,10 +167,47 @@
                 });
         }
 
+        function fetchFinancialReport(ticker) {
+            fetch(`/fetch_financial_report/${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    d3.select("#report-table").html("");
+                    drawFinancialReport(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching financial report data:', error);
+                    d3.select("#report-table").append("p").text("Failed to load financial report data");
+                });
+        }
+
+        function drawFinancialReport(data) {
+            const quarters = data.quarters;
+            const keys = Object.keys(data).filter(key => key !== 'quarters');
+
+            let table = "<table><tr><th>Metric</th>";
+                quarters.forEach(quarter => {
+                table += `<th>${quarter}</th>`;
+            });
+            table += "</tr>";
+
+            keys.forEach(key => {
+                table += `<tr><td>${key}</td>`;
+                data[key].forEach(value => {
+                    table += `<td>${value.toFixed(2)}</td>`;
+                });
+                table += "</tr>";
+            });
+
+            table += "</table>";
+
+            d3.select("#report-table").html(table);
+        }
+
         // Initial load for example ticker
         fetchSankeyData('AAPL');
         fetchBarChartPercent('AAPL')
         fetchBarChartRevenue('AAPL')
+        fetchFinancialReport('AAPL');
 
     </script>
 </body>

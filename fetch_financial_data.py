@@ -142,7 +142,7 @@ def fetch_net_income_percentage_data(ticker):
         'net_income_percentage': filtered_percentages,
     }
 
-    return {ticker: bar_chart_percentage}
+    return bar_chart_percentage
 
 def fetch_total_revenue_data(ticker):
     print('Fetching revenue data from pickle.')
@@ -167,7 +167,16 @@ def fetch_total_revenue_data(ticker):
         'net_income': filtered_income,
     }
 
-    return {ticker: bar_chart_data}
+    return bar_chart_data
+
+def fetch_financial_report(ticker):
+    stock = load_financial_data_from_pickle(ticker)
+    if stock is None:
+        return {}
+    
+    report_data = stock.T.fillna(0).to_dict('list')
+    report_data['quarters'] = stock.columns.tolist()
+    return report_data
 
 if __name__ == "__main__":
     with open('static/data/sp500_tickers.json') as f:

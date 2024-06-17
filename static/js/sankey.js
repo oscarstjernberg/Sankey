@@ -121,8 +121,8 @@ function drawBarChartPercent(data) {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const quarters = data.AAPL.quarters.map(d => new Date(d));
-    const netIncomePercentage = data.AAPL.net_income_percentage;
+    const quarters = data.quarters.map(d => new Date(d));
+    const netIncomePercentage = data.net_income_percentage;
 
     const x = d3.scaleBand()
         .domain(quarters)
@@ -181,7 +181,7 @@ function drawBarChartPercent(data) {
 
 
 function drawBarChartRevenue(data) {
-    const margin = {top: 20, right: 30, bottom: 60, left: 50},
+    const margin = {top: 60, right: 30, bottom: 60, left: 50},
           width = 400 - margin.left - margin.right,
           height = 300 - margin.top - margin.bottom;
 
@@ -191,9 +191,9 @@ function drawBarChartRevenue(data) {
       .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const quarters = data.AAPL.quarters.map(d => new Date(d));
-    const totalRevenue = data.AAPL.total_revenue;
-    const netIncome = data.AAPL.net_income;
+    const quarters = data.quarters.map(d => new Date(d));
+    const totalRevenue = data.total_revenue;
+    const netIncome = data.net_income;
 
     const x0 = d3.scaleBand()
         .domain(quarters)
@@ -247,6 +247,22 @@ function drawBarChartRevenue(data) {
         .attr("y", d => y(d.value) - 5)
         .attr("text-anchor", "middle")
         .text(d => formatValue(d.value));
+
+        svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Billion $");
+
+        svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", 0 - margin.top / 1.5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("Total Revenue vs Net Income per Quarter");
 }
 
     
