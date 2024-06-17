@@ -107,3 +107,146 @@ function drawSankey(data) {
 function formatValue(value) {
     return d3.format(",.0f")(value);  // Format the value to have commas as thousands separators
 }
+
+/* ############## Bar Chart #################### */
+
+function drawBarChartPercent(data) {
+    const margin = {top: 60, right: 30, bottom: 60, left: 50},
+            width = 400 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select("#bar-chart1").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const quarters = data.AAPL.quarters.map(d => new Date(d));
+    const netIncomePercentage = data.AAPL.net_income_percentage;
+
+    const x = d3.scaleBand()
+        .domain(quarters)
+        .range([0, width])
+        .padding(0.1);
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%Y-%m-%d")))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(netIncomePercentage)])
+        .range([height, 0]);
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    svg.selectAll("bars")
+        .data(netIncomePercentage)
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => x(quarters[i]))
+        .attr("y", d => y(d))
+        .attr("width", x.bandwidth() - 20)
+        .attr("height", d => height - y(d))
+        .attr("fill", "#ff9999");
+
+    svg.selectAll("labels")
+        .data(netIncomePercentage)
+        .enter()
+        .append("text")
+        .attr("x", (d, i) => x(quarters[i]) + x.bandwidth() / 2)
+        .attr("y", d => y(d) - 5)
+        .attr("text-anchor", "middle")
+        .text(d => formatValue(d));
+
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("%");
+
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", 0 - margin.top / 1.5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("Net Income Percentage per Quarter");
+}
+
+
+function drawBarChartRevenue(data) {
+    const margin = {top: 20, right: 30, bottom: 60, left: 50},
+          width = 400 - margin.left - margin.right,
+          height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select("#bar-chart2").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const quarters = data.AAPL.quarters.map(d => new Date(d));
+    const totalRevenue = data.AAPL.total_revenue;
+    const netIncome = data.AAPL.net_income;
+
+    const x0 = d3.scaleBand()
+        .domain(quarters)
+        .range([0, width])
+        .padding(0.2);
+
+    const x1 = d3.scaleBand()
+        .domain(["Total Revenue", "Net Income"])
+        .range([0, x0.bandwidth()])
+        .padding(0.1);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max([...totalRevenue, ...netIncome])])
+        .range([height, 0]);
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x0).tickFormat(d3.timeFormat("%Y-%m-%d")))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    const quarterGroups = svg.selectAll(".quarter")
+        .data(quarters)
+        .enter().append("g")
+        .attr("class", "quarter")
+        .attr("transform", d => `translate(${x0(d)},0)`);
+
+    quarterGroups.selectAll("rect")
+        .data(d => [
+            {key: "Total Revenue", value: totalRevenue[quarters.indexOf(d)]},
+            {key: "Net Income", value: netIncome[quarters.indexOf(d)]}
+        ])
+        .enter().append("rect")
+        .attr("x", d => x1(d.key))
+        .attr("y", d => y(d.value))
+        .attr("width", x1.bandwidth())
+        .attr("height", d => height - y(d.value))
+        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : "#404080");
+
+    quarterGroups.selectAll("text")
+        .data(d => [
+            {key: "Total Revenue", value: totalRevenue[quarters.indexOf(d)]},
+            {key: "Net Income", value: netIncome[quarters.indexOf(d)]}
+        ])
+        .enter().append("text")
+        .attr("x", d => x1(d.key) + x1.bandwidth() / 2)
+        .attr("y", d => y(d.value) - 5)
+        .attr("text-anchor", "middle")
+        .text(d => formatValue(d.value));
+}
+
+    

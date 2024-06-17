@@ -9,7 +9,7 @@ def handle_nan(value):
     return 0 if np.isnan(value) else value
 
 def get_financial_data_to_pickle(ticker):
-    print(f'Fetching data for {ticker}.')
+    print(f'Downloading data for {ticker}.')
     
     try:
         stock = yf.Ticker(ticker)
@@ -41,7 +41,7 @@ def fetch_financial_data(ticker):
     financial_data = {}
 
     try:
-        print('Fetchinf data for: ' + ticker)
+        print('Fetching data for: ' + ticker + ' from pickle.')
         stock = load_financial_data_from_pickle(ticker)
         
         
@@ -121,6 +121,53 @@ def fetch_financial_data(ticker):
         print(f"Unexpected error for ticker {ticker}: {e}")
 
     return financial_data
+
+def fetch_net_income_percentage_data(ticker):
+    print('Fetching bar data for ' + ticker + ' from pickle.')
+    stock = load_financial_data_from_pickle(ticker)
+    quarters = stock.columns.tolist()
+    net_income_percentage = np.nan_to_num((stock.loc['Net Income'] / stock.loc['Total Revenue'] * 100), nan=0.0).tolist()
+
+    # Filter out 0 values and keep quarters aligned
+    filtered_data = [
+        (quarter, percentage)
+        for quarter, percentage in zip(quarters, net_income_percentage)
+        if percentage != 0.0
+    ]
+
+    filtered_quarters, filtered_percentages = zip(*filtered_data) if filtered_data else ([], [])
+
+    bar_chart_percentage = {
+        'quarters': filtered_quarters,
+        'net_income_percentage': filtered_percentages,
+    }
+
+    return {ticker: bar_chart_percentage}
+
+def fetch_total_revenue_data(ticker):
+    print('Fetching revenue data from pickle.')
+    stock = load_financial_data_from_pickle(ticker)
+    
+    quarters = stock.columns.tolist()
+    total_revenue = np.nan_to_num(stock.loc['Total Revenue'] / 1000000000, nan=0.0).tolist()
+    net_income = np.nan_to_num(stock.loc['Net Income'] / 1000000000, nan=0.0).tolist()
+
+    # Filter out 0 values and keep quarters aligned
+    filtered_data = [
+        (quarter, revenue, income)
+        for quarter, revenue, income in zip(quarters, total_revenue, net_income)
+        if revenue != 0.0 and income != 0.0
+    ]
+
+    filtered_quarters, filtered_revenue, filtered_income = zip(*filtered_data) if filtered_data else ([], [], [])
+
+    bar_chart_data = {
+        'quarters': filtered_quarters,
+        'total_revenue': filtered_revenue,
+        'net_income': filtered_income,
+    }
+
+    return {ticker: bar_chart_data}
 
 if __name__ == "__main__":
     with open('static/data/sp500_tickers.json') as f:

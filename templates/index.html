@@ -23,6 +23,20 @@
             justify-content: center;
             width: 100%;
         }
+
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .chart {
+            width: 45%;
+            min-width: 300px; /* Ensure charts don't shrink too much */
+        }
+
         h1 {
             margin-bottom: 20px;
         }
@@ -48,7 +62,11 @@
         <button id="search-button">Search</button>
     </div>
     <div id="chart"></div>
-    <script>
+    <div class="chart-container">
+        <div id="bar-chart1" class="chart"></div>
+        <div id="bar-chart2" class="chart"></div>
+    </div>
+        <script>
         let sp500Tickers = [];
 
         // Load S&P 500 tickers
@@ -79,6 +97,7 @@
             const ticker = document.getElementById('ticker-dropdown').value;
             if (sp500Tickers.includes(ticker)) {
                 fetchSankeyData(ticker);
+                fetchBarChartPercent(ticker);
             } else {
                 alert('Ticker not found in S&P 500 index.');
             }
@@ -100,8 +119,37 @@
                 });
         }
 
+        function fetchBarChartPercent(ticker) {
+            fetch(`/fetch_net_income_percentage_data/${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    d3.select("#bar-chart1").html("");  // Clear existing chart
+                    drawBarChartPercent(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching net income percentage data:', error);
+                    d3.select("#bar-chart1").append("p").text("Failed to load bar chart data");
+                });
+        }
+
+        function fetchBarChartRevenue(ticker) {
+            fetch(`/fetch_total_revenue_data/${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    d3.select("#bar-chart2").html("");  // Clear existing chart
+                    drawBarChartRevenue(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching total revenue data:', error);
+                    d3.select("#bar-chart2").append("p").text("Failed to load bar chart data");
+                });
+        }
+
         // Initial load for example ticker
         fetchSankeyData('AAPL');
+        fetchBarChartPercent('AAPL')
+        fetchBarChartRevenue('AAPL')
+
     </script>
 </body>
 </html>
