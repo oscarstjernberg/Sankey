@@ -1,3 +1,6 @@
+const profit_color = "#72da72";
+const expense_color = "#ff9999";
+
 function drawSankey(data) {
     const container = d3.select("#chart");
     const width = container.node().getBoundingClientRect().width;
@@ -152,7 +155,7 @@ function drawBarChartPercent(data) {
         .attr("y", d => y(d))
         .attr("width", x.bandwidth() - 20)
         .attr("height", d => height - y(d))
-        .attr("fill", "#ff9999");
+        .attr("fill", profit_color);
 
     svg.selectAll("labels")
         .data(netIncomePercentage)
@@ -196,6 +199,20 @@ function drawBarChartRevenue(data) {
     const totalRevenue = data.total_revenue;
     const netIncome = data.net_income;
 
+    if (Math.max(...totalRevenue) > 1000000000) {
+        for (let i = 0; i < totalRevenue.length; i++) {
+            totalRevenue[i] = totalRevenue[i] / 1000000000;
+            netIncome[i] = netIncome[i] / 1000000000;
+        }
+        y_label = "Billion $";
+    } else {
+        for (let i = 0; i < totalRevenue.length; i++) {
+            totalRevenue[i] = totalRevenue[i] / 1000000;
+            netIncome[i] = netIncome[i] / 1000000;
+        }
+        y_label = "Million $";
+    }
+
     const x0 = d3.scaleBand()
         .domain(quarters)
         .range([0, width])
@@ -236,7 +253,7 @@ function drawBarChartRevenue(data) {
         .attr("y", d => y(d.value))
         .attr("width", x1.bandwidth())
         .attr("height", d => height - y(d.value))
-        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : "#404080");
+        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : profit_color);
 
     quarterGroups.selectAll("text")
         .data(d => [
@@ -255,7 +272,7 @@ function drawBarChartRevenue(data) {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Billion $");
+        .text(y_label);
 
         svg.append("text")
         .attr("x", width / 2)
@@ -280,6 +297,21 @@ function drawBarChartCost(data) {
     const quarters = data.quarters.map(d => new Date(d));
     const totalRevenue = data.total_revenue;
     const costRevenue = data.cost_of_revenue;
+
+
+    if (Math.max(...totalRevenue) > 1000000000) {
+        for (let i = 0; i < totalRevenue.length; i++) {
+            totalRevenue[i] = totalRevenue[i] / 1000000000;
+            costRevenue[i] = costRevenue[i] / 1000000000;
+        }
+        y_label = "Billion $";
+    } else {
+        for (let i = 0; i < totalRevenue.length; i++) {
+            totalRevenue[i] = totalRevenue[i] / 1000000;
+            costRevenue[i] = costRevenue[i] / 1000000;
+        }
+        y_label = "Million $";
+    }
 
     const x0 = d3.scaleBand()
         .domain(quarters)
@@ -321,7 +353,7 @@ function drawBarChartCost(data) {
         .attr("y", d => y(d.value))
         .attr("width", x1.bandwidth())
         .attr("height", d => height - y(d.value))
-        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : "#404080");
+        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : expense_color);
 
     quarterGroups.selectAll("text")
         .data(d => [
@@ -340,7 +372,7 @@ function drawBarChartCost(data) {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Billion $");
+        .text(y_label);
 
         svg.append("text")
         .attr("x", width / 2)

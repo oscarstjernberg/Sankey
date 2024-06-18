@@ -149,8 +149,8 @@ def fetch_total_revenue_data(ticker):
     stock = load_financial_data_from_pickle(ticker)
     
     quarters = stock.columns.tolist()
-    total_revenue = np.nan_to_num(stock.loc['Total Revenue'] / 1000000000, nan=0.0).tolist()
-    net_income = np.nan_to_num(stock.loc['Net Income'] / 1000000000, nan=0.0).tolist()
+    total_revenue = np.nan_to_num(stock.loc['Total Revenue'], nan=0.0).tolist()
+    net_income = np.nan_to_num(stock.loc['Net Income'], nan=0.0).tolist()
 
     # Filter out 0 values and keep quarters aligned
     filtered_data = [
@@ -174,8 +174,8 @@ def fetch_cost_data(ticker):
     stock = load_financial_data_from_pickle(ticker)
     
     quarters = stock.columns.tolist()
-    total_revenue = np.nan_to_num(stock.loc['Total Revenue'] / 1000000000, nan=0.0).tolist()
-    cost_of_revenue = np.nan_to_num(stock.loc['Cost Of Revenue'] / 1000000000, nan=0.0).tolist()
+    total_revenue = np.nan_to_num(stock.loc['Total Revenue'], nan=0.0).tolist()
+    cost_of_revenue = np.nan_to_num(stock.loc['Cost Of Revenue'], nan=0.0).tolist()
 
     # Filter out 0 values and keep quarters aligned
     filtered_data = [
