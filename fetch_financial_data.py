@@ -169,14 +169,91 @@ def fetch_total_revenue_data(ticker):
 
     return bar_chart_data
 
-def fetch_financial_report(ticker):
+def fetch_cost_data(ticker):
+    print('Fetching cost data from pickle.')
     stock = load_financial_data_from_pickle(ticker)
-    if stock is None:
-        return {}
     
-    report_data = stock.T.fillna(0).to_dict('list')
-    report_data['quarters'] = stock.columns.tolist()
-    return report_data
+    quarters = stock.columns.tolist()
+    total_revenue = np.nan_to_num(stock.loc['Total Revenue'] / 1000000000, nan=0.0).tolist()
+    cost_of_revenue = np.nan_to_num(stock.loc['Cost Of Revenue'] / 1000000000, nan=0.0).tolist()
+
+    # Filter out 0 values and keep quarters aligned
+    filtered_data = [
+        (quarter, revenue, cost)
+        for quarter, revenue, cost in zip(quarters, total_revenue, cost_of_revenue)
+        if revenue != 0.0 and cost != 0.0
+    ]
+
+    filtered_quarters, filtered_revenue, filtered_cost = zip(*filtered_data) if filtered_data else ([], [], [])
+
+    bar_chart_data = {
+        'quarters': filtered_quarters,
+        'total_revenue': filtered_revenue,
+        'cost_of_revenue': filtered_cost,
+    }
+
+    return bar_chart_data
+
+def fetch_financial_report(ticker):
+    print(f'Fetching financial report data for {ticker}')
+    stock = load_financial_data_from_pickle(ticker)
+    
+    def handle_nan_to_missing(data):
+        if isinstance(data, list):
+            return ["Missing Data" if np.isnan(x) else f"{x:,.0f}" for x in data]
+        elif np.isnan(data):
+            return "Missing Data"
+        else:
+            return f"{data:,.0f}"
+    
+    try:
+        total_revenue = handle_nan_to_missing(stock.loc['Total Revenue'].tolist())
+    except:
+        total_revenue = "Missing Data"
+    try:   
+        cost_of_revenue = handle_nan_to_missing(stock.loc['Cost Of Revenue'].tolist())
+    except:
+        cost_of_revenue = "Missing Data"
+    try:
+        gross_profit = handle_nan_to_missing(stock.loc['Gross Profit'].tolist())
+    except:
+        gross_profit = "Missing Data"
+    try:
+        operating_income = handle_nan_to_missing(stock.loc['Operating Income'].tolist())
+    except:
+        operating_income = "Missing Data"
+    try:
+        net_income = handle_nan_to_missing(stock.loc['Net Income'].tolist())
+    except:
+        net_income = "Missing Data"
+    try:
+        research_and_development = handle_nan_to_missing(stock.loc['Research And Development'].tolist())
+    except:
+        research_and_development = "Missing Data"
+    try:   
+        selling_general_and_administration = handle_nan_to_missing(stock.loc['Selling General And Administration'].tolist())
+    except:
+        selling_general_and_administration = "Missing Data"
+    try:
+        operating_expense = handle_nan_to_missing(stock.loc['Operating Expense'].tolist())
+    except:
+        operating_expense = "Missing Data"
+    
+    financial_report = {
+        'Income Statement': {
+            'Total Revenue': total_revenue,
+            'Cost Of Revenue': cost_of_revenue,
+            'Gross Profit': gross_profit,
+            'Operating Income': operating_income,
+            'Net Income': net_income,
+            'Research And Development': research_and_development,
+            'Selling General And Administration': selling_general_and_administration,
+            'Operating Expense': operating_expense,
+        }
+    }
+    
+    return financial_report
+
 
 if __name__ == "__main__":
     with open('static/data/sp500_tickers.json') as f:

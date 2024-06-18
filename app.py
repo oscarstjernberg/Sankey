@@ -37,6 +37,15 @@ def get_total_revenue_data(ticker):
         print(f"Unexpected error occurred: {e}")
         return jsonify({"error": f"Unexpected error occurred: {e}"}), 500
     
+@app.route('/fetch_cost_data/<ticker>')
+def get_cost_data(ticker):
+    try:
+        cost_data = fetch_cost_data(ticker)
+        return jsonify(cost_data)
+    except Exception as e:
+        print(f"Unexpected error occurred: {e}")
+        return jsonify({"error": f"Unexpected error occurred: {e}"}), 500
+    
 @app.route('/fetch_financial_report/<ticker>')
 def get_financial_report(ticker):
     try:

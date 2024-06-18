@@ -28,12 +28,12 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
+            gap: 50px;
             width: 100%;
             margin-top: 20px;
         }
         .chart {
-            width: 45%;
+            width: 25%;
             min-width: 300px; /* Ensure charts don't shrink too much */
         }
 
@@ -53,23 +53,52 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        #financial-report {
+        #report-table {
+            margin-top: 30px;
             width: 80%;
-            margin-top: 20px;
             text-align: left;
         }
-        #financial-report table {
+        .report-section {
+            margin-bottom: 10px;
+        }
+        .report-section h2 {
+            background-color: #cccccc;
+            padding: 5px;
+            font-weight: bold;
+        }
+        .report-section table {
             width: 100%;
             border-collapse: collapse;
         }
-        #financial-report th, #financial-report td {
-            border: 1px solid #ddd;
+        .report-section th, .report-section td {
             padding: 8px;
+            text-align: right;
         }
-        #financial-report th {
+        .report-section th {
             background-color: #f2f2f2;
-            text-align: center;
         }
+        .report-section .description {
+            text-align: left;
+        }
+
+
+    /* Media query for smaller screens */
+    @media (max-width: 768px) {
+        .chart {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chart {
+            width: 100%;
+        }
+
+        #chart svg {
+            width: 100%;
+            height: auto;
+        }
+    }
     </style>
 </head>
 <body>
@@ -82,11 +111,9 @@
     <div class="chart-container">
         <div id="bar-chart1" class="chart"></div>
         <div id="bar-chart2" class="chart"></div>
+        <div id="bar-chart3" class="chart"></div>
     </div>
-    <div id="financial-report">
-        <h2>Financial Report</h2>
-        <div id="report-table"></div>
-    </div>
+    <div id="report-table"></div>
         <script>
         let sp500Tickers = [];
 
@@ -120,6 +147,8 @@
                 fetchSankeyData(ticker);
                 fetchBarChartPercent(ticker);
                 fetchBarChartRevenue(ticker);
+                fetchBarChartCost(ticker);
+                fetchFinancialReport(ticker);
             } else {
                 alert('Ticker not found in S&P 500 index.');
             }
@@ -167,6 +196,19 @@
                 });
         }
 
+        function fetchBarChartCost(ticker) {
+            fetch(`/fetch_cost_data/${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    d3.select("#bar-chart3").html("");  // Clear existing chart
+                    drawBarChartCost(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching cost bar chart data:', error);
+                    d3.select("#bar-chart3").append("p").text("Failed to load bar chart data");
+                });
+        }
+
         function fetchFinancialReport(ticker) {
             fetch(`/fetch_financial_report/${ticker}`)
                 .then(response => response.json())
@@ -181,32 +223,20 @@
         }
 
         function drawFinancialReport(data) {
-            const quarters = data.quarters;
-            const keys = Object.keys(data).filter(key => key !== 'quarters');
-
-            let table = "<table><tr><th>Metric</th>";
-                quarters.forEach(quarter => {
-                table += `<th>${quarter}</th>`;
-            });
-            table += "</tr>";
-
-            keys.forEach(key => {
-                table += `<tr><td>${key}</td>`;
-                data[key].forEach(value => {
-                    table += `<td>${value.toFixed(2)}</td>`;
-                });
-                table += "</tr>";
-            });
-
-            table += "</table>";
-
-            d3.select("#report-table").html(table);
+            let table = `<div class="report-section"><h2>Income Statement</h2><table>`;
+            table += `<tr><th class="description"></th><th>2024-03-31</th><th>2023-12-31</th><th>2023-09-30</th><th>2023-06-30</th><th>2023-03-31</th><th>2022-12-31</th><th>2022-09-30</th></tr>`;
+            for (const item in data['Income Statement']) {
+                table += `<tr><td class="description">${item}</td><td>${data['Income Statement'][item][0]}</td><td>${data['Income Statement'][item][1]}</td><td>${data['Income Statement'][item][2]}</td><td>${data['Income Statement'][item][3]}</td><td>${data['Income Statement'][item][4]}</td><td>${data['Income Statement'][item][5]}</td><td>${data['Income Statement'][item][6]}</td></tr>`;
+            }
+            table += `</table></div>`;
+            document.getElementById("report-table").innerHTML = table;
         }
 
         // Initial load for example ticker
         fetchSankeyData('AAPL');
-        fetchBarChartPercent('AAPL')
-        fetchBarChartRevenue('AAPL')
+        fetchBarChartPercent('AAPL');
+        fetchBarChartRevenue('AAPL');
+        fetchBarChartCost('AAPL');
         fetchFinancialReport('AAPL');
 
     </script>

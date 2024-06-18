@@ -1,5 +1,6 @@
 function drawSankey(data) {
-    const width = 1200;
+    const container = d3.select("#chart");
+    const width = container.node().getBoundingClientRect().width;
     const height = 400;
 
     const svg = d3.select("#chart").append("svg")
@@ -265,4 +266,88 @@ function drawBarChartRevenue(data) {
         .text("Total Revenue vs Net Income per Quarter");
 }
 
+function drawBarChartCost(data) {
+    const margin = {top: 60, right: 30, bottom: 60, left: 50},
+          width = 400 - margin.left - margin.right,
+          height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select("#bar-chart3").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const quarters = data.quarters.map(d => new Date(d));
+    const totalRevenue = data.total_revenue;
+    const costRevenue = data.cost_of_revenue;
+
+    const x0 = d3.scaleBand()
+        .domain(quarters)
+        .range([0, width])
+        .padding(0.2);
+
+    const x1 = d3.scaleBand()
+        .domain(["Total Revenue", "Net Income"])
+        .range([0, x0.bandwidth()])
+        .padding(0.1);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max([...totalRevenue, ...costRevenue])])
+        .range([height, 0]);
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x0).tickFormat(d3.timeFormat("%Y-%m-%d")))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    const quarterGroups = svg.selectAll(".quarter")
+        .data(quarters)
+        .enter().append("g")
+        .attr("class", "quarter")
+        .attr("transform", d => `translate(${x0(d)},0)`);
+
+    quarterGroups.selectAll("rect")
+        .data(d => [
+            {key: "Total Revenue", value: totalRevenue[quarters.indexOf(d)]},
+            {key: "Net Income", value: costRevenue[quarters.indexOf(d)]}
+        ])
+        .enter().append("rect")
+        .attr("x", d => x1(d.key))
+        .attr("y", d => y(d.value))
+        .attr("width", x1.bandwidth())
+        .attr("height", d => height - y(d.value))
+        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : "#404080");
+
+    quarterGroups.selectAll("text")
+        .data(d => [
+            {key: "Total Revenue", value: totalRevenue[quarters.indexOf(d)]},
+            {key: "Net Income", value: costRevenue[quarters.indexOf(d)]}
+        ])
+        .enter().append("text")
+        .attr("x", d => x1(d.key) + x1.bandwidth() / 2)
+        .attr("y", d => y(d.value) - 5)
+        .attr("text-anchor", "middle")
+        .text(d => formatValue(d.value));
+
+        svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Billion $");
+
+        svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", 0 - margin.top / 1.5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("Total Revenue vs Cost of Revenue per Quarter");
+}
     
