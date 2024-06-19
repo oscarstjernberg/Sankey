@@ -1,0 +1,108 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #eeeeee; /* Light grey background color */
+}
+#chart {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.chart-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 50px;
+    width: 100%;
+    margin-top: 20px;
+}
+.chart {
+    width: 25%;
+    min-width: 300px; /* Ensure charts don't shrink too much */
+}
+
+.select2-dropdown {
+    max-height: 200px; /* Set your desired max height here */
+    overflow-y: auto;  /* Enable vertical scrolling */
+    
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+h3 {
+    padding-top: 50px;
+}
+#search-bar {
+    margin-bottom: 20px;
+    width: 300px; /* Adjust width as needed */
+}
+select {
+    width: 100%; /* Full width for the select element */
+}
+button {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+#company-info {
+    margin-top: 20px;
+    width: 80%;
+    text-align: left;
+    padding-top: 10px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+#report-table {
+    margin-top: 30px;
+    width: 80%;
+    text-align: left;
+}
+.report-section {
+    margin-bottom: 10px;
+}
+.report-section h2 {
+    background-color: #cccccc;
+    padding: 5px;
+    font-weight: bold;
+}
+.report-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.report-section th, .report-section td {
+    padding: 8px;
+    text-align: right;
+}
+.report-section th {
+    background-color: #f2f2f2;
+}
+.report-section .description {
+    text-align: left;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .chart {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart {
+        width: 100%;
+    }
+
+    #chart svg {
+        width: 100%;
+        height: auto;
+    }
+}

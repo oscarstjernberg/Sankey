@@ -1,5 +1,6 @@
-const profit_color = "#72da72";
+const profit_color = "#39ac39";
 const expense_color = "#ff9999";
+const total_revenue_color = "#006699";
 
 function drawSankey(data) {
     const container = d3.select("#chart");
@@ -51,6 +52,27 @@ function drawSankey(data) {
         nodes: data.nodes.map(d => Object.assign({}, d)),
         links: data.links.map(d => Object.assign({}, d))
     });
+
+    console.log(Math.max(data.links[0].value))
+
+    const maxValeu = Math.max(data.links[0].value)
+
+    if (maxValeu == 0) { // If Total Revenu is missing then no adjustment will be done to the labels is the sankey diagram.
+        decNum = 0;
+        divider = 1;
+    } else if (maxValeu >= 10000000000) { // Adjust labels greater then 10 Billion
+        decNum = 1;
+        divider = 1000000000;
+        node_label = " Billion $";
+    } else if (maxValeu < 10000000000 && maxValeu > 1000000000) {
+        decNum = 2;
+        divider = 1000000000;
+        node_label = " Billion $";
+    } else {
+        decNum = 0;
+        divider = 1000000;
+        node_label = " Million $"
+    }
 
     // Custom alignment for nodes
     nodes.forEach(node => {
@@ -105,7 +127,8 @@ function drawSankey(data) {
         .attr("y", d => (d.y1 + d.y0) / 2 + 10)
         .attr("dy", "0.35em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-        .text(d => formatValue(d.value));
+        .text(d => (d.value / divider).toFixed(decNum) + node_label)
+
 }
 
 function formatValue(value) {
@@ -199,17 +222,27 @@ function drawBarChartRevenue(data) {
     const totalRevenue = data.total_revenue;
     const netIncome = data.net_income;
 
-    if (Math.max(...totalRevenue) > 1000000000) {
+    if (Math.max(...totalRevenue) >= 10000000000) { // 10 Billion
         for (let i = 0; i < totalRevenue.length; i++) {
             totalRevenue[i] = totalRevenue[i] / 1000000000;
             netIncome[i] = netIncome[i] / 1000000000;
         }
+        decNumber = 1;
         y_label = "Billion $";
+    } else if (Math.max(...totalRevenue) < 10000000000 && Math.max(...totalRevenue) > 1000000000) { // Between 10 Billion adn 1 Billion
+        for (let i = 0; i < totalRevenue.length; i++) {
+            totalRevenue[i] = totalRevenue[i] / 1000000000;
+            netIncome[i] = netIncome[i] / 1000000000;
+        }
+        decNumber = 2;
+        y_label = "Billion $";
+    
     } else {
         for (let i = 0; i < totalRevenue.length; i++) {
             totalRevenue[i] = totalRevenue[i] / 1000000;
             netIncome[i] = netIncome[i] / 1000000;
         }
+        decNumber = 0
         y_label = "Million $";
     }
 
@@ -253,7 +286,7 @@ function drawBarChartRevenue(data) {
         .attr("y", d => y(d.value))
         .attr("width", x1.bandwidth())
         .attr("height", d => height - y(d.value))
-        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : profit_color);
+        .attr("fill", d => d.key === "Total Revenue" ? total_revenue_color : profit_color);
 
     quarterGroups.selectAll("text")
         .data(d => [
@@ -264,7 +297,7 @@ function drawBarChartRevenue(data) {
         .attr("x", d => x1(d.key) + x1.bandwidth() / 2)
         .attr("y", d => y(d.value) - 5)
         .attr("text-anchor", "middle")
-        .text(d => formatValue(d.value));
+        .text(d => d.value.toFixed(decNumber)); // Adjusts number of decimals
 
         svg.append("text")
         .attr("transform", "rotate(-90)")
@@ -298,18 +331,27 @@ function drawBarChartCost(data) {
     const totalRevenue = data.total_revenue;
     const costRevenue = data.cost_of_revenue;
 
-
-    if (Math.max(...totalRevenue) > 1000000000) {
+    if (Math.max(...totalRevenue) >= 10000000000) { // 10 Billion
         for (let i = 0; i < totalRevenue.length; i++) {
             totalRevenue[i] = totalRevenue[i] / 1000000000;
             costRevenue[i] = costRevenue[i] / 1000000000;
         }
+        decNumber = 1;
         y_label = "Billion $";
+    } else if (Math.max(...totalRevenue) < 10000000000 && Math.max(...totalRevenue) > 1000000000) { // Between 10 Billion adn 1 Billion
+        for (let i = 0; i < totalRevenue.length; i++) {
+            totalRevenue[i] = totalRevenue[i] / 1000000000;
+            costRevenue[i] = costRevenue[i] / 1000000000;
+        }
+        decNumber = 2;
+        y_label = "Billion $";
+    
     } else {
         for (let i = 0; i < totalRevenue.length; i++) {
             totalRevenue[i] = totalRevenue[i] / 1000000;
             costRevenue[i] = costRevenue[i] / 1000000;
         }
+        decNumber = 0
         y_label = "Million $";
     }
 
@@ -353,7 +395,7 @@ function drawBarChartCost(data) {
         .attr("y", d => y(d.value))
         .attr("width", x1.bandwidth())
         .attr("height", d => height - y(d.value))
-        .attr("fill", d => d.key === "Total Revenue" ? "#69b3a2" : expense_color);
+        .attr("fill", d => d.key === "Total Revenue" ? total_revenue_color : expense_color);
 
     quarterGroups.selectAll("text")
         .data(d => [
@@ -364,7 +406,7 @@ function drawBarChartCost(data) {
         .attr("x", d => x1(d.key) + x1.bandwidth() / 2)
         .attr("y", d => y(d.value) - 5)
         .attr("text-anchor", "middle")
-        .text(d => formatValue(d.value));
+        .text(d => d.value.toFixed(decNumber));
 
         svg.append("text")
         .attr("transform", "rotate(-90)")

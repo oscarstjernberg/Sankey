@@ -9,103 +9,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script src="{{ url_for('static', filename='js/sankey.js') }}"></script>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            background-color: #eeeeee; /* Light grey background color */
-        }
-        #chart {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        .chart-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 50px;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .chart {
-            width: 25%;
-            min-width: 300px; /* Ensure charts don't shrink too much */
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-        #search-bar {
-            margin-bottom: 20px;
-            width: 300px; /* Adjust width as needed */
-        }
-        select {
-            width: 100%; /* Full width for the select element */
-        }
-        button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        #report-table {
-            margin-top: 30px;
-            width: 80%;
-            text-align: left;
-        }
-        .report-section {
-            margin-bottom: 10px;
-        }
-        .report-section h2 {
-            background-color: #cccccc;
-            padding: 5px;
-            font-weight: bold;
-        }
-        .report-section table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .report-section th, .report-section td {
-            padding: 8px;
-            text-align: right;
-        }
-        .report-section th {
-            background-color: #f2f2f2;
-        }
-        .report-section .description {
-            text-align: left;
-        }
-
-
-    /* Media query for smaller screens */
-    @media (max-width: 768px) {
-        .chart {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .chart {
-            width: 100%;
-        }
-
-        #chart svg {
-            width: 100%;
-            height: auto;
-        }
-    }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Money Flow Sankey Diagram</h1>
+    <h1>Income Statement</h1>
     <div id="search-bar">
-        <select id="ticker-dropdown"></select>
+        <select id="ticker-dropdown" >
+            <!-- Pre-selecting the AAPL ticker as an example -->
+            <option value="AAPL" selected>AAPL</option>
+        </select>
         <button id="search-button">Search</button>
     </div>
     <div id="chart"></div>
@@ -114,132 +26,9 @@
         <div id="bar-chart2" class="chart"></div>
         <div id="bar-chart3" class="chart"></div>
     </div>
+    <h3>Company Information</h3>
+    <div id="company-info" style="margin-top: 20px;" class="company-info"></div>
     <div id="report-table"></div>
-        <script>
-        let sp500Tickers = [];
-
-        // Load S&P 500 tickers
-        fetch('/static/data/sp500_tickers.json')
-            .then(response => response.json())
-            .then(data => {
-                sp500Tickers = data;
-                populateDropdown(sp500Tickers);
-                $('#ticker-dropdown').select2(); // Initialize Select2
-            })
-            .catch(error => {
-                console.error('Error fetching S&P 500 tickers:', error);
-            });
-
-        // Function to populate the dropdown with tickers
-        function populateDropdown(tickers) {
-            const dropdown = document.getElementById('ticker-dropdown');
-            tickers.forEach(ticker => {
-                const option = document.createElement('option');
-                option.value = ticker;
-                option.text = ticker;
-                dropdown.appendChild(option);
-            });
-        }
-
-        // Function to search for the ticker and update the diagram
-        function searchTicker() {
-            const ticker = document.getElementById('ticker-dropdown').value;
-            if (sp500Tickers.includes(ticker)) {
-                fetchSankeyData(ticker);
-                fetchBarChartPercent(ticker);
-                fetchBarChartRevenue(ticker);
-                fetchBarChartCost(ticker);
-                fetchFinancialReport(ticker);
-            } else {
-                alert('Ticker not found in S&P 500 index.');
-            }
-        }
-
-        // Event listener for the search button
-        document.getElementById('search-button').addEventListener('click', searchTicker);
-
-        function fetchSankeyData(ticker) {
-            fetch(`/data/${ticker}`)
-                .then(response => response.json())
-                .then(data => {
-                    d3.select("#chart").html("");  // Clear existing chart
-                    drawSankey(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    d3.select("#chart").append("p").text("Failed to load financial data");
-                });
-        }
-
-        function fetchBarChartPercent(ticker) {
-            fetch(`/fetch_net_income_percentage_data/${ticker}`)
-                .then(response => response.json())
-                .then(data => {
-                    d3.select("#bar-chart1").html("");  // Clear existing chart
-                    drawBarChartPercent(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching net income percentage data:', error);
-                    d3.select("#bar-chart1").append("p").text("Failed to load bar chart data");
-                });
-        }
-
-        function fetchBarChartRevenue(ticker) {
-            fetch(`/fetch_total_revenue_data/${ticker}`)
-                .then(response => response.json())
-                .then(data => {
-                    d3.select("#bar-chart2").html("");  // Clear existing chart
-                    drawBarChartRevenue(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching total revenue data:', error);
-                    d3.select("#bar-chart2").append("p").text("Failed to load bar chart data");
-                });
-        }
-
-        function fetchBarChartCost(ticker) {
-            fetch(`/fetch_cost_data/${ticker}`)
-                .then(response => response.json())
-                .then(data => {
-                    d3.select("#bar-chart3").html("");  // Clear existing chart
-                    drawBarChartCost(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching cost bar chart data:', error);
-                    d3.select("#bar-chart3").append("p").text("Failed to load bar chart data");
-                });
-        }
-
-        function fetchFinancialReport(ticker) {
-            fetch(`/fetch_financial_report/${ticker}`)
-                .then(response => response.json())
-                .then(data => {
-                    d3.select("#report-table").html("");
-                    drawFinancialReport(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching financial report data:', error);
-                    d3.select("#report-table").append("p").text("Failed to load financial report data");
-                });
-        }
-
-        function drawFinancialReport(data) {
-            let table = `<div class="report-section"><h2>Income Statement</h2><table>`;
-            table += `<tr><th class="description"></th><th>2024-03-31</th><th>2023-12-31</th><th>2023-09-30</th><th>2023-06-30</th><th>2023-03-31</th><th>2022-12-31</th><th>2022-09-30</th></tr>`;
-            for (const item in data['Income Statement']) {
-                table += `<tr><td class="description">${item}</td><td>${data['Income Statement'][item][0]}</td><td>${data['Income Statement'][item][1]}</td><td>${data['Income Statement'][item][2]}</td><td>${data['Income Statement'][item][3]}</td><td>${data['Income Statement'][item][4]}</td><td>${data['Income Statement'][item][5]}</td><td>${data['Income Statement'][item][6]}</td></tr>`;
-            }
-            table += `</table></div>`;
-            document.getElementById("report-table").innerHTML = table;
-        }
-
-        // Initial load for example ticker
-        fetchSankeyData('AAPL');
-        fetchBarChartPercent('AAPL');
-        fetchBarChartRevenue('AAPL');
-        fetchBarChartCost('AAPL');
-        fetchFinancialReport('AAPL');
-
-    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

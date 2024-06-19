@@ -46,6 +46,15 @@ def get_cost_data(ticker):
         print(f"Unexpected error occurred: {e}")
         return jsonify({"error": f"Unexpected error occurred: {e}"}), 500
     
+@app.route('/fetch_company_information/<ticker>')
+def get_company_information(ticker):
+    try:
+        company_information_data = load_company_information_from_pickle(ticker)
+        return jsonify(company_information_data)
+    except Exception as e:
+        print(f"Unexpected error occurred: {e}")
+        return jsonify({"error": f"Unexpected error occurred: {e}"}), 500
+    
 @app.route('/fetch_financial_report/<ticker>')
 def get_financial_report(ticker):
     try:

@@ -14,7 +14,8 @@ def get_financial_data_to_pickle(ticker):
     try:
         stock = yf.Ticker(ticker)
         financial_data = {
-            'quarterly_financials': stock.quarterly_financials.to_dict()
+            'quarterly_financials': stock.quarterly_financials.to_dict(),
+            'company_information': stock.info
             # Add other relevant data as needed
         }
         
@@ -33,6 +34,16 @@ def load_financial_data_from_pickle(ticker):
         with open(f'static/data/pickles/{ticker}.pickle', 'rb') as f:
             financial_data = pickle.load(f)
         return pd.DataFrame(financial_data['quarterly_financials'])
+    except Exception as e:
+        print(f"Error loading data for {ticker}. Exception: {e}")
+        return None
+    
+def load_company_information_from_pickle(ticker):
+    try:
+        with open(f'static/data/pickles/{ticker}.pickle', 'rb') as f:
+            company_information_data = pickle.load(f)
+            company_information_data = {'description':company_information_data['company_information']['longBusinessSummary']}
+        return company_information_data
     except Exception as e:
         print(f"Error loading data for {ticker}. Exception: {e}")
         return None
